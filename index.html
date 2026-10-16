@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GRAVY · 와인그랩 맛 통역사 데모</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      *{box-sizing:border-box}
+      body{margin:0;min-height:100vh;background:#E9E3DE;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Sans KR','Apple SD Gothic Neo',sans-serif;color:#1F1A1C}
+      .phone{width:390px;height:844px;max-height:100vh;background:#F6F3EF;border-radius:36px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(74,20,36,.18);border:8px solid #1F1A1C}
+      @media (max-width:440px){body{background:#F6F3EF}.phone{width:100%;height:100vh;border:0;border-radius:0;box-shadow:none}}
+      .bar{background:#fff;border-bottom:1px solid #ECE6E1;padding:8px 12px 12px;display:flex;flex-direction:column;gap:8px}
+      .barrow{display:flex;align-items:center;gap:8px;min-height:44px}
+      .iconbtn{width:44px;height:44px;border:0;background:transparent;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#1F1A1C}
+      .iconbtn:hover{background:#F3EEEA}
+      .brand{font-weight:700;font-size:16px}.brand span{color:#6E1F35}
+      .mock{margin-left:auto;font-size:11px;color:#6B6265;border:1px solid #DDD5D0;border-radius:999px;padding:3px 8px}
+      .stepper{display:flex;gap:4px}
+      .seg{flex:1;display:flex;flex-direction:column;gap:4px;font-size:10px;color:#8A8084;text-align:center}
+      .seg i{display:block;height:4px;border-radius:2px;background:#E7E0DB;transition:background .4s}
+      .seg.done i,.seg.now i{background:#6E1F35}.seg.now{color:#6E1F35;font-weight:600}
+      .scroll{flex:1;overflow-y:auto;padding:20px 16px 32px}
+      .screen{display:flex;flex-direction:column;gap:16px;animation:enter .45s cubic-bezier(.2,.7,.2,1)}
+      @keyframes enter{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+      .screen.back{animation-name:enterBack}
+      @keyframes enterBack{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
+      .pop{animation:pop .4s ease both}
+      @keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+      .eyebrow{font-size:12px;font-weight:600;color:#6E1F35;letter-spacing:.4px}
+      .h1{font-size:22px;line-height:1.4;font-weight:700;margin:0}
+      .h2{font-size:16px;font-weight:700;margin:0}
+      .p{font-size:14px;line-height:1.6;color:#5E5559;margin:0}
+      .small{font-size:12px;line-height:1.5;color:#6B6265;margin:0}
+      .card{background:#fff;border:1px solid #ECE6E1;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
+      .btn{width:100%;min-height:52px;border-radius:12px;border:0;background:#6E1F35;color:#fff;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;transition:background .2s,transform .1s}
+      .btn:hover{background:#5A1829}.btn:active{transform:scale(.98)}
+      .btn:disabled{background:#CFC5C1;cursor:not-allowed}
+      .btn.ghost{background:#fff;color:#6E1F35;border:1.5px solid #6E1F35}.btn.ghost:hover{background:#F7EEF1}
+      .chips{display:flex;flex-wrap:wrap;gap:8px}
+      .chip{min-height:44px;padding:0 14px;border-radius:999px;border:1px solid #D9D0CB;background:#fff;font-size:14px;font-family:inherit;cursor:pointer;transition:all .2s}
+      .chip.on{background:#6E1F35;border-color:#6E1F35;color:#fff}
+      .field{width:100%;min-height:48px;border:1.5px solid #D9D0CB;border-radius:12px;padding:10px 14px;font-size:14px;font-family:inherit}
+      .field:focus{outline:none;border-color:#6E1F35}
+      .wine{display:flex;gap:12px;align-items:center}
+      .bottle{width:44px;height:64px;border-radius:10px;background:#F3E6EA;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#6E1F35}
+      .wname{font-size:15px;font-weight:600}.wsub{font-size:12px;color:#6B6265}
+      .meta{display:flex;flex-direction:column;gap:2px}
+      .status{font-size:11px;padding:3px 8px;border-radius:999px;background:#E6F0E4;color:#2B4A27;align-self:flex-start;font-weight:600}
+      .status.bad{background:#F3E6EA;color:#6E1F35}
+      .legend{display:flex;flex-wrap:wrap;gap:6px}
+      .bdg{font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;white-space:nowrap}
+      .bdg.me{background:#FFE08A;color:#4A3800;border:1px solid #D9AE1E}
+      .bdg.ver{background:#EAF2F4;color:#1F4A56;border:1px solid #2F6170}
+      .bdg.est{background:#FFF7EA;color:#6E3F0B;border:1.5px dashed #9B5A12}
+      .bdg.ok{background:#E6F0E4;color:#2B4A27;border:1px solid #4F7A47}
+      .bdg.ng{background:#F3E6EA;color:#6E1F35;border:1px solid #6E1F35}
+      .blk{border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+      .blk.me{background:#FFF8E1;border:1px solid #E5C24A}
+      .blk.ver{background:#F2F7F8;border:1px solid #2F6170}
+      .blk.est{background:#FFFAF1;border:1.5px dashed #9B5A12}
+      .blkhead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+      .blktitle{font-size:14px;font-weight:700}
+      .headline{font-size:15px;font-weight:700;line-height:1.55;margin:0;color:#4A2A08}
+      .qrow{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-bottom:1px solid #EFE9E5}.qrow:last-child{border-bottom:0}
+      .seg3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+      .sbtn{min-height:44px;border-radius:10px;border:1px solid #D9D0CB;background:#fff;font-size:13px;font-family:inherit;cursor:pointer;transition:all .2s;padding:0 4px}
+      .sbtn.on{background:#6E1F35;border-color:#6E1F35;color:#fff;font-weight:600}
+      .mrow{display:grid;grid-template-columns:56px 1fr 1fr 52px;gap:6px;align-items:center;font-size:12px;padding:8px 0;border-bottom:1px solid #E3ECEE}.mrow:last-child{border-bottom:0}
+      .mhead{font-size:11px;font-weight:700;color:#4D4548}
+      .cellme{background:#FFF8E1;border:1px solid #E5C24A;border-radius:8px;padding:5px 6px}
+      .cellver{background:#EAF2F4;border:1px solid #2F6170;border-radius:8px;padding:5px 6px;color:#1F4A56}
+      .dict{display:flex;flex-direction:column;gap:4px;padding:10px 12px;background:#fff;border-radius:10px;border:1px solid #E6DED8}
+      .dictk{font-size:13px;font-weight:700;color:#4A3800}.dictv{font-size:13px;line-height:1.5}
+      .conf{display:flex;align-items:center;gap:8px;font-size:12px;color:#5E5559}
+      .meter{display:flex;gap:3px}.meter i{width:18px;height:6px;border-radius:3px;background:#E7E0DB;transition:background .4s}.meter i.on{background:#9B5A12}
+      .trow{display:grid;grid-template-columns:96px 16px 1fr;gap:6px;align-items:center;font-size:13px;padding:6px 0}
+      .term{font-weight:700;color:#1F4A56}
+      .rec{background:#fff;border:1px solid #ECE6E1;border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px}
+      .rank{font-size:11px;font-weight:700;color:#fff;background:#1F1A1C;padding:3px 8px;border-radius:6px;align-self:flex-start}
+      .cmp{display:flex;flex-direction:column;gap:6px;background:#F2F7F8;border:1px solid #2F6170;border-radius:12px;padding:12px}
+      .barline{display:grid;grid-template-columns:52px 1fr 20px;align-items:center;gap:8px;font-size:12px;color:#4D4548}
+      .track{height:8px;border-radius:4px;background:#DCE3E5;overflow:hidden}
+      .fill{height:8px;border-radius:4px;width:0;transition:width .8s cubic-bezier(.2,.7,.2,1)}
+      .fill.a{background:#A99A94}.fill.b{background:#2F6170}.fill.l{background:#7FA678}
+      .reason{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.55}
+      .expert{font-size:12px;color:#5E5559;background:#F6F3EF;border-radius:8px;padding:8px 10px;line-height:1.5}
+      .notice{background:#F1ECE8;border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.55;color:#4D4548}
+      .s3{display:flex;gap:12px;align-items:flex-start}
+      .num{width:28px;height:28px;border-radius:50%;background:#6E1F35;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+      .hero{background:#6E1F35;color:#fff;border-radius:20px;padding:22px 20px;display:flex;flex-direction:column;gap:10px}
+      .hero .p{color:#F2E3E8}
+      .talk{display:flex;flex-direction:column;gap:6px;font-size:13px}
+      .talk b{display:inline-block;background:#fff;color:#6E1F35;border-radius:10px;padding:5px 10px;font-weight:600}
+      .calib{display:flex;align-items:center;gap:8px;font-size:13px;flex-wrap:wrap}
+      .from{color:#8A8084;text-decoration:line-through}.to{color:#6E1F35;font-weight:700}
+      .okbox{background:#EAF2F4;border:1px solid #2F6170;border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.6;color:#1F4A56;display:flex;flex-direction:column;gap:6px}
+    </style>
+  </head>
+  <body>
+    <div class="phone">
+      <div class="bar">
+        <div class="barrow">
+          <button class="iconbtn" id="back" aria-label="이전 단계로" style="display:none">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M15 18l-6-6 6-6"/>
+            </svg>
+          </button>
+          <div class="brand">와인그랩 <span>· GRAVY</span></div>
+          <div class="mock">컨셉 프로토타입 · 목업</div>
+        </div>
+        <div class="stepper" id="stepper" style="display:none"></div>
+      </div>
+      <div class="scroll" id="scroll">
+        <div id="view"></div>
+      </div>
+    </div>
+
+    <script>
+      const ORDER = ['tannin', 'acid', 'sweet', 'body'];
+      const SHORT = {tannin: '떫은맛', acid: '신맛', sweet: '단맛', body: '무게감'};
+      const MORE = {tannin: '더 떫었다', acid: '더 시었다', sweet: '더 달았다', body: '더 무거웠다'};
+      const LESS = {tannin: '덜 떫었다', acid: '덜 시었다', sweet: '덜 달았다', body: '덜 무거웠다'};
+      const EXPR = {tannin: '너무 떫었어요', acid: '너무 시었어요', body: '너무 무거웠어요', sweet: '생각보다 달았어요'};
+      const ALT = {acid: 'tannin', sweet: 'body'};
+      const A = {name: '목업 와인 A', grape: '까베르네 소비뇽', country: '칠레', type: '레드', t: {tannin: 5, acid: 3, sweet: 1, body: 5}};
+      const L = {name: '목업 와인 L', grape: '산지오베제', country: '이탈리아', type: '레드', t: {tannin: 3, acid: 4, sweet: 1, body: 3}};
+      const WINES = [
+        {id: 'B', name: '목업 와인 B', grape: '메를로', country: '칠레', t: {tannin: 3, acid: 3, sweet: 1, body: 4}},
+        {id: 'C', name: '목업 와인 C', grape: '피노 누아', country: '프랑스', t: {tannin: 2, acid: 4, sweet: 1, body: 2}},
+        {id: 'D', name: '목업 와인 D', grape: '그르나슈', country: '스페인', t: {tannin: 2, acid: 3, sweet: 2, body: 3}},
+        {id: 'E', name: '목업 와인 E', grape: '말벡', country: '아르헨티나', t: {tannin: 4, acid: 2, sweet: 1, body: 5}},
+        {id: 'F', name: '목업 와인 F', grape: '템프라니요', country: '스페인', t: {tannin: 3, acid: 4, sweet: 1, body: 4}},
+        {id: 'G', name: '목업 와인 G', grape: '진판델', country: '미국', t: {tannin: 3, acid: 2, sweet: 3, body: 4}},
+        {id: 'K', name: '목업 와인 K', grape: '바르베라', country: '이탈리아', t: {tannin: 2, acid: 4, sweet: 1, body: 3}}
+      ];
+      const STEPS = ['기준점', '내 표현', '비교', '맛 사전', '추천', '보정'];
+      const BOTTLE = '<div class="bottle" aria-hidden="true"><svg width="20" height="40" viewBox="0 0 20 40" fill="currentColor"><path d="M7 0h6v9c3 2 5 5 5 9v20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V18c0-4 2-7 5-9z"/></svg></div>';
+
+      let S = {step: 0, expr: null, memo: '', cmp: {}, pick: null, reserved: false, fb: null};
+      let dir = 'fwd';
+
+      function go(step, extra = {}) {
+        dir = step < S.step ? 'back' : 'fwd';
+        S = {...S, ...extra, step};
+        render(true);
+      }
+
+      function set(extra) {
+        S = {...S, ...extra};
+        render(false);
+      }
+
+      const rel = (a, b) => a > b ? 'more' : a < b ? 'less' : 'same';
+      const expertOf = w => (w.t.sweet <= 1 ? '드라이' : w.t.sweet === 2 ? '오프 드라이' : '스위트') + ' · ' + (w.t.body >= 4 ? '풀 바디' : w.t.body === 3 ? '미디엄 바디' : '라이트 바디') + (w.t.tannin >= 4 ? ' · 탄닌감 강함' : w.t.tannin <= 2 ? ' · 탄닌 부드러움' : '');
+      const vsL = (w, k) => {
+        const d = w.t[k] - L.t[k];
+        return d === 0 ? '와인 L과 같아요' : d > 0 ? `와인 L보다 ${d}단계 높아요` : `와인 L보다 ${-d}단계 낮아요`;
+      };
+      const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+
+      function derived() {
+        const k = S.expr, match = k ? A.t[k] > L.t[k] : false, av = k ? (match ? k : ALT[k]) : 'tannin';
+        const cut = S.fb === 'more' ? Math.max(A.t[av] - 1, 2) : A.t[av];
+        return {k, match, av, cut};
+      }
+
+      const screens = {
+        0() {
+          return `
+            <div class="hero pop">
+              <div class="eyebrow" style="color:#F7D7E0">와인그랩 AI 에이전트 · 맛 통역사</div>
+              <h1 class="h1" style="color:#fff">같은 '달다'도<br>사람마다 달라요</h1>
+              <p class="p">설명을 들어도 맛이 어긋나는 건 기준이 없어서예요. 그라비는 내가 마셔본 와인을 잣대로 내 맛의 기준을 배우고, 와인 정보를 내 언어로 통역해요.</p>
+              <div class="talk">
+                <div><b>"단 거 말고 적당한 걸로요"</b></div>
+                <div style="color:#F2E3E8">→ 추천: "드라이 와인이요"</div>
+                <div><b>"너무 시고 떫어요…"</b></div>
+              </div>
+            </div>
+            <div class="card pop" style="animation-delay:.1s">
+              <h2 class="h2">그라비가 하는 일</h2>
+              <div class="s3"><div class="num">1</div><div><div class="wname">마셔본 와인을 기준점으로</div><p class="small">좋았던 와인과 별로였던 와인이 내 맛의 잣대가 돼요.</p></div></div>
+              <div class="s3"><div class="num">2</div><div><div class="wname">내 표현을 공통 기준으로 통역</div><p class="small">"떫다", "달다" 같은 내 말이 실제 맛 수치로 어디쯤인지 찾아 '내 맛 사전'에 남겨요.</p></div></div>
+              <div class="s3"><div class="num">3</div><div><div class="wname">내 기준으로 설명하고 추천</div><p class="small">"와인 L보다 조금 덜 떫어요"처럼 내가 아는 와인과 비교해 알려줘요.</p></div></div>
+            </div>
+            <div class="legend"><span class="bdg me">내 표현</span><span class="bdg ver">확인된 상품 정보</span><span class="bdg est">그라비의 추정</span></div>
+            <p class="small">과제용 시연입니다. 와인 이름과 맛 수치(1~5)는 목업이며, 실제 AI 모델·주문은 연결되어 있지 않습니다.</p>
+            <button class="btn" data-go="1">시연 시작하기</button>`;
+        },
+
+        1() {
+          return `
+            <div class="eyebrow">1 · 기준점 와인</div>
+            <h1 class="h1">최근 마셔본 와인이<br>내 맛의 잣대가 돼요</h1>
+            <p class="p">구매 이력에서 평가한 와인 2개를 불러왔어요.</p>
+            <div class="card pop">
+              <div class="wine">
+                ${BOTTLE}
+                <div class="meta">
+                  <div class="wname">${L.name}</div>
+                  <div class="wsub">${L.grape} · ${L.country} · 레드</div>
+                  <span class="status">좋았어요 · 가까이 갈 기준</span>
+                </div>
+              </div>
+            </div>
+            <div class="card pop" style="animation-delay:.1s">
+              <div class="wine">
+                ${BOTTLE}
+                <div class="meta">
+                  <div class="wname">${A.name}</div>
+                  <div class="wsub">${A.grape} · ${A.country} · 레드</div>
+                  <span class="status bad">별로였어요 · 피할 기준</span>
+                </div>
+              </div>
+            </div>
+            <div class="blk ver pop" style="animation-delay:.2s">
+              <div class="blkhead">
+                <div class="blktitle" style="font-size:13px">왜 기준점이 필요할까요?</div>
+                <span class="bdg ver">확인 · 구매 이력</span>
+              </div>
+              <p class="small" style="color:#1F4A56">"달다", "떫다"는 사람마다 기준이 달라요. 둘 다 마셔본 와인이라 "L보다 더, 덜"로 비교하면 서로 같은 기준으로 말할 수 있어요.</p>
+            </div>
+            <button class="btn" data-go="2">이 두 와인으로 시작하기</button>`;
+        },
+
+        2() {
+          return `
+            <div class="eyebrow">2 · 내 말로 표현</div>
+            <h1 class="h1">와인 A는 어떤 점이<br>별로였나요?</h1>
+            <p class="p">전문 용어는 몰라도 돼요. 느낀 그대로 골라 주세요.</p>
+            <div class="chips">
+              ${['tannin', 'acid', 'body', 'sweet'].map(x => `<button class="chip ${S.expr === x ? 'on' : ''}" data-expr="${x}">${EXPR[x]}</button>`).join('')}
+            </div>
+            <label class="small" for="memo" style="font-weight:600;color:#1F1A1C">직접 적기 (선택)</label>
+            <input id="memo" class="field" type="text" placeholder="예: 입안이 텁텁하고 끝맛이 썼어요" value="${esc(S.memo)}">
+            <button class="btn" data-go="3" ${S.expr ? '' : 'disabled'}>다음 · 기준점과 비교하기</button>`;
+        },
+
+        3() {
+          const done = ORDER.every(a => S.cmp[a]);
+          return `
+            <div class="eyebrow">3 · 기준점과 비교</div>
+            <h1 class="h1">좋았던 와인 L과 비교하면,<br>와인 A는 어땠나요?</h1>
+            <p class="p">정답은 없어요. 내 느낌 그대로 골라 주세요. 실제 수치와 비교해 내 기준을 찾아요.</p>
+            <div class="card" style="padding:6px 14px">
+              ${ORDER.map(a => `
+                <div class="qrow">
+                  <div class="wname" style="font-size:14px">${SHORT[a]}</div>
+                  <div class="seg3">
+                    ${[['more', MORE[a]], ['same', '비슷했다'], ['less', LESS[a]]].map(([v, l]) => `<button class="sbtn ${S.cmp[a] === v ? 'on' : ''}" data-cmp="${a}:${v}">${l}</button>`).join('')}
+                  </div>
+                </div>`).join('')}
+            </div>
+            <button class="btn" data-go="4" ${done ? '' : 'disabled'}>내 맛 기준 통역하기</button>`;
+        },
+
+        4() {
+          const {k, match, av, cut} = derived();
+          let agree = 0;
+          const rows = ORDER.map(a => {
+            const m = S.cmp[a], db = rel(A.t[a], L.t[a]), ok = m === db;
+            if (ok) agree++;
+            return `
+              <div class="mrow">
+                <span style="font-weight:600">${SHORT[a]}</span>
+                <span class="cellme">${m === 'more' ? MORE[a] : m === 'less' ? LESS[a] : '비슷했다'}</span>
+                <span class="cellver">${A.t[a]} / ${L.t[a]} ${db === 'more' ? '(A가 높음)' : db === 'less' ? '(A가 낮음)' : '(같음)'}</span>
+                <span class="bdg ${ok ? 'ok' : 'ng'}">${ok ? '일치' : '어긋남'}</span>
+              </div>`;
+          }).join('');
+
+          const headline = match
+            ? `내가 말한 "${EXPR[k]}"는 ${SHORT[k]} ${A.t[k]} 수준일 가능성이 높아요.`
+            : `수치상 와인 A의 ${SHORT[k]}은 와인 L보다 높지 않아요(${A.t[k]} / ${L.t[k]}). 내가 "${EXPR[k]}"라고 느낀 건 ${SHORT[av]}(${A.t[av]} / ${L.t[av]}) 때문일 가능성이 있어요.`;
+          const sub = match
+            ? `좋았던 와인 L의 ${SHORT[k]}은 ${L.t[k]}이었어요. 이 차이가 내 기준의 경계예요.`
+            : `같은 단어라도 상품 정보의 "${SHORT[k]}"과 내가 말하는 "${SHORT[k]}"이 다를 수 있어요. 이런 어긋남이 소통 오류의 원인이에요.`;
+          const dict = [
+            [`"${EXPR[k]}" (내 표현)`, `→ ${SHORT[av]} ${cut} 이상은 피하기`],
+            ['편하게 느낀 범위 (와인 L)', `→ ${SHORT[av]} ${L.t[av]} 정도`]
+          ];
+          if (!match) dict.push([`내 "${SHORT[k]}" ≠ 상품 정보의 "${SHORT[k]}"`, `→ 다음에 "${SHORT[k]}"이라고 말하면 ${SHORT[av]}도 함께 확인해요`]);
+          const conf = S.fb === 'same' ? 2 : 1;
+          const confLabel = S.fb === 'same' ? '보통 · 근거 2건' : S.fb ? '낮음 · 기준 조정됨' : '낮음 · 근거 1건';
+
+          return `
+            <div class="eyebrow">4 · 통역 결과 · 내 맛 사전</div>
+            <h1 class="h1">내 느낌과 실제 수치,<br>4개 중 ${agree}개 일치</h1>
+            <div class="legend"><span class="bdg me">내 표현</span><span class="bdg ver">확인된 상품 정보</span><span class="bdg est">그라비의 추정</span></div>
+            <div class="blk ver pop">
+              <div class="blkhead">
+                <div class="blktitle">와인 A, 와인 L 대비</div>
+                <span class="bdg ver">수치 · 상품 DB</span>
+              </div>
+              <div class="mrow">
+                <span class="mhead">맛</span>
+                <span class="mhead">내 느낌</span>
+                <span class="mhead">실제 수치 A / L</span>
+                <span class="mhead">결과</span>
+              </div>
+              ${rows}
+            </div>
+            <div class="blk est pop" style="animation-delay:.15s">
+              <div class="blkhead">
+                <div class="blktitle">그라비의 통역</div>
+                <span class="bdg est">추정</span>
+              </div>
+              <p class="headline">${headline}</p>
+              <p class="small" style="color:#4A3A2C">${sub}</p>
+            </div>
+            <div class="blk me pop" style="animation-delay:.3s">
+              <div class="blkhead">
+                <div class="blktitle">내 맛 사전</div>
+                <span class="bdg est">추정 · 계속 보정</span>
+              </div>
+              ${dict.map(([a, b]) => `<div class="dict"><span class="dictk">${a}</span><span class="dictv">${b}</span></div>`).join('')}
+              <div class="conf">
+                <div class="meter">${[1, 2, 3].map(i => `<i class="${i <= conf ? 'on' : ''}"></i>`).join('')}</div>
+                확신도 ${confLabel}
+              </div>
+            </div>
+            <div class="blk ver pop" style="animation-delay:.45s">
+              <div class="blkhead">
+                <div class="blktitle">전문가 용어, 내 기준으로 번역</div>
+                <span class="bdg ver">확인</span>
+              </div>
+              ${[
+                ['드라이', '단맛 1 → 와인 A·L과 같은 수준'],
+                ['풀 바디', '무게감 4~5 → 와인 A 정도 (L보다 무거움)'],
+                ['탄닌감 강함', '떫은맛 4~5 → 와인 A 정도'],
+                ['산미가 산뜻한', '신맛 4 → 와인 L 정도']
+              ].map(([t, m]) => `<div class="trow"><span class="term">${t}</span><span>→</span><span>${m}</span></div>`).join('')}
+            </div>
+            <button class="btn" data-go="5">내 기준으로 추천받기</button>`;
+        },
+
+        5() {
+          const {k, av, cut} = derived();
+          const limit = S.fb === 'more' ? cut : A.t[av];
+          const recs = WINES
+            .filter(w => w.t[av] < limit)
+            .map(w => ({w, sc: ORDER.reduce((s, a) => s + Math.abs(w.t[a] - L.t[a]) * (a === av ? 1.3 : 1), 0)}))
+            .sort((x, y) => x.sc - y.sc)
+            .slice(0, 3);
+
+          return `
+            <div class="eyebrow">5 · 내 기준으로 추천</div>
+            <h1 class="h1">${SHORT[av]}은 와인 L 쪽으로,<br>내 기준 추천 3종</h1>
+            <p class="p">아는 와인 A, L과 비교해 설명해요.</p>
+            ${recs.map(({w}, i) => {
+              const ver = [`${SHORT[av]} ${w.t[av]}: 와인 A보다 ${A.t[av] - w.t[av]}단계 낮고, ${vsL(w, av)}`];
+              const same = ORDER.filter(a => a !== av && w.t[a] === L.t[a]).map(a => SHORT[a]);
+              if (same.length) ver.push(same.join('·') + '은 좋았던 와인 L과 같아요');
+              ORDER.filter(a => a !== av && w.t[a] !== L.t[a]).forEach(a => ver.push(`${SHORT[a]}은 ${vsL(w, a)}`));
+              return `
+                <div class="rec pop" style="animation-delay:${i * .12}s">
+                  <span class="rank">추천 ${i + 1}</span>
+                  <div class="wine">
+                    ${BOTTLE}
+                    <div class="meta">
+                      <div class="wname">${w.name}</div>
+                      <div class="wsub">${w.grape} · ${w.country} · 레드</div>
+                    </div>
+                  </div>
+                  <div class="cmp">
+                    <div class="blkhead">
+                      <span class="small" style="font-weight:700;color:#1F4A56">${SHORT[av]} 비교</span>
+                      <span class="bdg ver">확인</span>
+                    </div>
+                    ${[['와인 A', 'a', A.t[av]], ['이 와인', 'b', w.t[av]], ['와인 L', 'l', L.t[av]]].map(([n, c, v]) => `
+                      <div class="barline">
+                        <span>${n}</span>
+                        <div class="track"><div class="fill ${c}" data-w="${v * 20}"></div></div>
+                        <span>${v}</span>
+                      </div>`).join('')}
+                  </div>
+                  ${ver.map(v => `<div class="reason"><span class="bdg ver">확인</span><span>${v}</span></div>`).join('')}
+                  <div class="reason"><span class="bdg est">추정</span><span>내 기준의 "${EXPR[k]}"를 피하고, 와인 L에 가깝게 느껴질 가능성이 있어요.</span></div>
+                  <div class="expert">전문가 표기: <b>${expertOf(w)}</b><br>위 설명은 이 표기를 내 기준(와인 A·L)으로 번역한 거예요.</div>
+                  <button class="btn ghost" data-pick="${w.id}">이 와인으로 할게요</button>
+                </div>`;
+            }).join('')}`;
+        },
+
+        6() {
+          const {av, cut} = derived();
+          const pw = WINES.find(w => w.id === S.pick) || WINES[0];
+          let to = '', msg = '';
+          if (S.fb === 'same') {
+            to = `${SHORT[av]} ${A.t[av]} 이상 피하기 · 확신도 보통`;
+            msg = '통역이 맞았어요. 같은 기준을 다음 추천에 더 적극적으로 반영해요.';
+          }
+          if (S.fb === 'more') {
+            to = `${SHORT[av]} ${cut} 이상 피하기`;
+            msg = `${SHORT[av]} ${pw.t[av]}도 강하게 느끼시는군요. 기준을 한 단계 낮춰, 다음엔 ${SHORT[av]} ${cut - 1} 이하에서 찾아요.`;
+          }
+          if (S.fb === 'less') {
+            to = `${SHORT[av]} ${A.t[av]} 이상 피하기 · 범위 넓힘`;
+            msg = `아직 여유가 있어요. 기준은 유지하고, 다음 추천 범위를 ${SHORT[av]} ${Math.min(pw.t[av] + 1, A.t[av] - 1)}까지 넓혀 선택지를 늘려요.`;
+          }
+
+          return `
+            <div class="eyebrow">6 · 마신 뒤 · 내 기준 보정</div>
+            <h1 class="h1">${pw.name},<br>예상과 비교해 어땠나요?</h1>
+            <div class="card">
+              <div class="wine">
+                ${BOTTLE}
+                <div class="meta">
+                  <div class="wname">${pw.name}</div>
+                  <div class="wsub">${pw.grape} · ${pw.country} · ${expertOf(pw)}</div>
+                </div>
+              </div>
+              ${S.reserved
+                ? '<div class="notice pop">시연 화면입니다. 실제 와인그랩 주문·결제는 연결되어 있지 않아요.</div>'
+                : '<button class="btn" data-act="reserve">매장 픽업 예약하기</button>'}
+            </div>
+            <div class="card">
+              <span class="small" style="font-weight:700;color:#6E1F35">며칠 뒤 · 그라비의 후속 질문</span>
+              <div class="wname" style="font-size:14px">${pw.name}의 ${SHORT[av]}, 예상과 비교해 어땠나요?</div>
+              <div class="seg3">
+                ${[['more', '생각보다 ' + MORE[av]], ['same', '예상과 비슷'], ['less', '생각보다 ' + LESS[av]]].map(([v, l]) => `<button class="sbtn ${S.fb === v ? 'on' : ''}" data-fb="${v}">${l}</button>`).join('')}
+              </div>
+              ${S.fb ? `
+                <div class="okbox pop">
+                  <div class="calib">
+                    <span>내 기준:</span>
+                    <span class="from">${SHORT[av]} ${A.t[av]} 이상 피하기 · 확신도 낮음</span>
+                    <span>→</span>
+                    <span class="to">${to}</span>
+                  </div>
+                  <div>${msg}</div>
+                </div>
+                <button class="btn ghost" data-go="4">보정된 내 맛 사전 보기</button>` : ''}
+            </div>
+            <button class="btn ghost" data-act="restart">처음부터 다시 시연하기</button>`;
+        }
+      };
+
+      const view = document.getElementById('view');
+      const scroll = document.getElementById('scroll');
+
+      function render(animate) {
+        const y = scroll.scrollTop;
+        view.innerHTML = `<div class="screen ${animate && dir === 'back' ? 'back' : ''}" ${animate ? '' : 'style="animation:none"'}>${screens[S.step]()}</div>`;
+        if (!animate) view.querySelectorAll('.pop').forEach(e => e.style.animation = 'none');
+        scroll.scrollTop = animate ? 0 : y;
+        document.getElementById('back').style.display = S.step > 0 ? 'flex' : 'none';
+        const st = document.getElementById('stepper');
+        st.style.display = S.step > 0 ? 'flex' : 'none';
+        st.innerHTML = STEPS.map((l, i) => `<div class="seg ${i < S.step - 1 ? 'done' : i === S.step - 1 ? 'now' : ''}"><i></i>${l}</div>`).join('');
+        requestAnimationFrame(() => requestAnimationFrame(() => view.querySelectorAll('.fill').forEach(f => f.style.width = f.dataset.w + '%')));
+      }
+
+      document.getElementById('back').onclick = () => go(S.step - 1);
+
+      view.addEventListener('click', e => {
+        const b = e.target.closest('button');
+        if (!b || b.disabled) return;
+        if (b.dataset.go) go(+b.dataset.go);
+        else if (b.dataset.expr) set({expr: b.dataset.expr});
+        else if (b.dataset.cmp) {
+          const [a, v] = b.dataset.cmp.split(':');
+          set({cmp: {...S.cmp, [a]: v}});
+        }
+        else if (b.dataset.pick) go(6, {pick: b.dataset.pick, reserved: false, fb: null});
+        else if (b.dataset.fb) set({fb: b.dataset.fb});
+        else if (b.dataset.act === 'reserve') set({reserved: true});
+        else if (b.dataset.act === 'restart') go(0, {expr: null, memo: '', cmp: {}, pick: null, reserved: false, fb: null});
+      });
+
+      view.addEventListener('input', e => {
+        if (e.target.id === 'memo') S.memo = e.target.value;
+      });
+
+      render(true);
+    </script>
+  </body>
+</html>
